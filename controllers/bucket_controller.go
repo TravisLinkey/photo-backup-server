@@ -5,14 +5,16 @@ import (
   "github.com/aws/aws-sdk-go/aws/session"
   "github.com/aws/aws-sdk-go/service/s3"
   "github.com/aws/aws-sdk-go/service/s3/s3manager"
+  "github.com/gin-gonic/gin"
+
   "fmt"
-  "os"
+  "net/http"
 
   "photo-backup-server/utils"
 )
 
 
-func ListBuckets() {
+func ListBuckets(c *gin.Context) {
   svc := utils.GetS3Client()
 
 	result, err := svc.ListBuckets(nil)
@@ -20,15 +22,10 @@ func ListBuckets() {
 		utils.ExitErrorf("Unable to list buckets, %v", err)
 	}
 
-	fmt.Println("Buckets:")
-
-	for _, b := range result.Buckets {
-		fmt.Printf("* %s created on %s\n",
-			aws.StringValue(b.Name), aws.TimeValue(b.CreationDate))
-	}
+  c.IndentedJSON(http.StatusOK, result.Buckets)
 }
 
-func ListBucketObjects() {
+func ListBucketObjects(c *gin.Context) {
   svc := utils.GetS3Client()
 
   bucket := "photo-backup-travis-linkey"
@@ -37,30 +34,21 @@ func ListBucketObjects() {
     utils.ExitErrorf("Unable to list items in bucket %q, %v", bucket, err)
   }
 
-  for _, item := range resp.Contents {
-    fmt.Println("Name:         ", *item.Key)
-    fmt.Println("Last modified:", *item.LastModified)
-    fmt.Println("Size:         ", *item.Size)
-    fmt.Println("Storage class:", *item.StorageClass)
-    fmt.Println("")
-  }
+  c.IndentedJSON(http.StatusOK, resp.Contents)
 }
 
-func UploadFileToBucket() {
+func UploadFileToBucket(c *gin.Context) {
   bucket := "photo-backup-travis-linkey"
 
-  if len(os.Args) != 2 {
-    utils.ExitErrorf("Filename required\nUsage: %s filename", os.Args[0])
+  fileHeader, err := c.FormFile("file")
+  if (err != nil) {
+    utils.ExitErrorf("File not passed in form data")
   }
 
-  filename := os.Args[1]
-
-  file, err := os.Open(filename)
-  if err != nil {
-    utils.ExitErrorf("Unable to open file %q, %v",  err)
+  f, err := fileHeader.Open()
+  if (err != nil) {
+    utils.ExitErrorf("Error opening file header, %v", err)
   }
-
-  defer file.Close()
 
   sess, err := session.NewSession(&aws.Config{
     Region: aws.String("us-west-2")},
@@ -70,13 +58,15 @@ func UploadFileToBucket() {
 
   _, err = uploader.Upload(&s3manager.UploadInput{
     Bucket: aws.String(bucket),
-    Key: aws.String(filename),
-    Body: file,
+    Key: aws.String(fileHeader.Filename),
+    Body: f,
   })
 
   if err != nil {
-    utils.ExitErrorf("Unable to upload %q to %q, %v", filename, bucket, err)
+    utils.ExitErrorf("Unable to upload %q to %q, %v", fileHeader.Filename, bucket, err)
   }
 
-  fmt.Printf("Sucessfully uploaded %q to %q\n", filename, bucket)
+  fmt.Printf("Sucessfully uploaded %q to %q\n", fileHeader.Filename, bucket)
+
+  c.IndentedJSON(http.StatusOK, "Successfully uploaded files!")
 }

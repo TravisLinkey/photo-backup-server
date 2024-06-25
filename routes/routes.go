@@ -6,8 +6,9 @@ import (
 )
 
 func SetupRoutes(r *gin.Engine) {
+  r.MaxMultipartMemory = 8 << 20
   homeRoutes(r)
-  // bucketRoutes(r)
+  bucketRoutes(r)
 }
 
 func homeRoutes(r *gin.Engine) {
@@ -15,10 +16,10 @@ func homeRoutes(r *gin.Engine) {
 }
 
 func bucketRoutes(r *gin.Engine) {
-  // bucketGroup := r.Group("/buckets") 
-  // {
-  //   bucketGroup.GET("/all", controllers.ListBuckets)
-  //   bucketGroup.GET("/objects/all", controllers.ListBucketObjects)
-  //   bucketGroup.POST("/upload", controllers.UploadFileToBucket)
-  // }
+  bucketGroup := r.Group("/buckets") 
+  {
+    bucketGroup.GET("/all", controllers.ListBuckets)
+    bucketGroup.GET("/objects/all", controllers.ListBucketObjects)
+    bucketGroup.POST("/upload", controllers.UploadFileToBucket)
+  }
 }
