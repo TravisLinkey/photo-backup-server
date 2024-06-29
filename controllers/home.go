@@ -7,5 +7,5 @@ import (
 )
 
 func Home(c *gin.Context) {
-  c.IndentedJSON(http.StatusOK, "Server is working!")
+  c.IndentedJSON(http.StatusOK, "Home route is working!")
 }

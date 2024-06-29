@@ -9,3 +9,11 @@ variable "acl" {
   type = string
   default = "private"
 }
+
+variable "routes" {
+  description = "A list of routes"
+  type = list(object({
+    path = string
+    authorization = string
+  }))
+}

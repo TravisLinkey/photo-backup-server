@@ -1,12 +1,15 @@
 package main
 
 import (
-  "fmt"
+  "log"
+  "context"
 
-  // "github.com/gin-gonic/gin"
+  "github.com/aws/aws-lambda-go/events"
   "github.com/aws/aws-lambda-go/lambda"
+	"github.com/awslabs/aws-lambda-go-api-proxy/gin"
+  "github.com/gin-gonic/gin"
 
-  // "photo-backup-server/routes"
+  "photo-backup-server/routes"
 )
 
 type Request struct {
@@ -19,20 +22,25 @@ type Response struct {
   StatusMessage string `json:"statusMessage"`
 }
 
-func handler(event Request) (Response, error) {
-  fmt.Println("%v\n", event)
+var ginLambda *ginadapter.GinLambdaV2
 
-  return Response{StatusCode: "200", StatusMessage: "Success"}, nil
+func init() {
+  log.Printf("Gin cold start")
+  r := gin.Default()
+
+  routes.SetupRoutes(r)
+
+  ginLambda = ginadapter.NewV2(r)
+
+  // r.Run(":8080")
+}
+
+
+func Handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
+  return ginLambda.ProxyWithContext(ctx, req)
 }
 
 
 func main() {
-  fmt.Println("-- Server Working --")
-
-  lambda.Start(handler)
-
-  // r := gin.Default()
-  // routes.SetupRoutes(r)
-
-  // r.Run(":8080")
+  lambda.Start(Handler)
 }
