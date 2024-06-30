@@ -12,16 +12,6 @@ import (
   "photo-backup-server/routes"
 )
 
-type Request struct {
-  Action string `json:"action"`
-  Data string `json:"data"`
-}
-
-type Response struct {
-  StatusCode string `json:"statusCode"`
-  StatusMessage string `json:"statusMessage"`
-}
-
 var ginLambda *ginadapter.GinLambdaV2
 
 func init() {
@@ -31,8 +21,6 @@ func init() {
   routes.SetupRoutes(r)
 
   ginLambda = ginadapter.NewV2(r)
-
-  // r.Run(":8080")
 }
 
 

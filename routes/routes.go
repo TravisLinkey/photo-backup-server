@@ -21,5 +21,6 @@ func bucketRoutes(r *gin.Engine) {
     bucketGroup.GET("/all", controllers.ListBuckets)
     bucketGroup.GET("/objects/all", controllers.ListBucketObjects)
     bucketGroup.POST("/upload", controllers.UploadFileToBucket)
+    bucketGroup.GET("/presigned-url", controllers.CreatePreSignedURL)
   }
 }

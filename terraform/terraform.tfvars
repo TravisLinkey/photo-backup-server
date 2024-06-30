@@ -14,6 +14,10 @@ routes = [
     authorization = "NONE"
   },
   { 
+    path = "GET /buckets/presigned-url",
+    authorization = "NONE"
+  },
+  { 
     path = "POST /buckets/upload",
     authorization = "NONE"
   },

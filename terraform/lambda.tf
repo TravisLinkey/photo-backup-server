@@ -38,6 +38,35 @@ resource "aws_iam_role" "lambda_execution_role" {
   })
 }
 
+resource "aws_iam_role_policy" "lambda_s3_permissions" {
+  name = "lambda-s3-policy"
+  role = aws_iam_role.lambda_execution_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid: "AllowS3Access",
+        Effect = "Allow",
+        Action = [
+          "s3:*",
+        ],
+        Resource = [
+          "arn:aws:s3:::*",      # List specific bucket
+          "arn:aws:s3:::*/*"     # Allow actions on objects in the specific bucket
+        ]
+      },
+      {
+        Action = [
+          "s3:ListAllMyBuckets"
+        ],
+        Effect = "Allow",
+        Resource = "*"
+      }
+    ]
+  })
+}
+
 # Attach the necessary policies to the IAM role (Example policy, adjust as needed)
 resource "aws_iam_role_policy_attachment" "lambda_role_attachment" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
