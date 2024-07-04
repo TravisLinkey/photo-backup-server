@@ -18,12 +18,13 @@ import (
 var bucket string = "photo-backup-travis-linkey"
 
 func CreatePreSignedURL(c *gin.Context) {
+  subFolder := c.Request.Header.Get("X-Foldername")
   filename := c.Request.Header.Get("X-Filename")
   svc := utils.GetS3Client()
 
   req, _ := svc.PutObjectRequest(&s3.PutObjectInput{
     Bucket: aws.String(bucket),
-    Key: aws.String(filename),
+    Key: aws.String(subFolder + "/" + filename),
   })
 
   urlStr, _ := req.Presign(15 * time.Minute)
