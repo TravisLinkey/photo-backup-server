@@ -1,6 +1,6 @@
 
-resource "aws_lambda_function" "golambda" {
-  function_name    = "golambda"
+resource "aws_lambda_function" "photo_backup_server" {
+  function_name    = "photo-backup-server"
   handler          = "bootstrap"
   runtime          = "provided.al2023"
   role             = aws_iam_role.lambda_execution_role.arn
@@ -13,7 +13,7 @@ resource "aws_lambda_function" "golambda" {
 resource "aws_lambda_permission" "apigw_permission" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.golambda.function_name
+  function_name = aws_lambda_function.photo_backup_server.function_name
   principal     = "apigateway.amazonaws.com"
 
   # The /*/* portion grants access from any deployment stage of the API Gateway

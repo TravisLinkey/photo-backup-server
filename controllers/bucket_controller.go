@@ -25,6 +25,7 @@ func CreatePreSignedURL(c *gin.Context) {
   req, _ := svc.PutObjectRequest(&s3.PutObjectInput{
     Bucket: aws.String(bucket),
     Key: aws.String(subFolder + "/" + filename),
+    ServerSideEncryption: aws.String("aws:kms"),
   })
 
   urlStr, _ := req.Presign(15 * time.Minute)
