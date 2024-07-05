@@ -2,28 +2,31 @@ package controllers
 
 import (
   "log"
-  "fmt"
   "net/http"
   "time"
 
   "github.com/aws/aws-sdk-go/aws"
-  "github.com/aws/aws-sdk-go/aws/session"
   "github.com/aws/aws-sdk-go/service/s3"
-  "github.com/aws/aws-sdk-go/service/s3/s3manager"
   "github.com/gin-gonic/gin"
 
   "photo-backup-server/utils"
 )
 
-var bucket string = "photo-backup-travis-linkey"
+var sourceBucket string = "photo-backup-travis-linkey"
+var destBucket string = "photo-backup-thumbnails"
+
+var s3Client *s3.S3
+
+func init() {
+  s3Client = utils.GetS3Client()
+}
 
 func CreatePreSignedURL(c *gin.Context) {
   subFolder := c.Request.Header.Get("X-Foldername")
   filename := c.Request.Header.Get("X-Filename")
-  svc := utils.GetS3Client()
 
-  req, _ := svc.PutObjectRequest(&s3.PutObjectInput{
-    Bucket: aws.String(bucket),
+  req, _ := s3Client.PutObjectRequest(&s3.PutObjectInput{
+    Bucket: aws.String(sourceBucket),
     Key: aws.String(subFolder + "/" + filename),
     ServerSideEncryption: aws.String("aws:kms"),
   })
@@ -33,9 +36,7 @@ func CreatePreSignedURL(c *gin.Context) {
 }
 
 func ListBuckets(c *gin.Context) {
-  svc := utils.GetS3Client()
-
-	result, err := svc.ListBuckets(nil)
+	result, err := s3Client.ListBuckets(nil)
 	if err != nil {
 		utils.ExitErrorf("Unable to list buckets, %v", err)
 	}
@@ -44,49 +45,35 @@ func ListBuckets(c *gin.Context) {
 }
 
 func ListBucketObjects(c *gin.Context) {
-  svc := utils.GetS3Client()
-
-  resp, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: aws.String(bucket)})
+  resp, err := s3Client.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: aws.String(sourceBucket)})
   if err != nil {
-    utils.ExitErrorf("Unable to list items in bucket %q, %v", bucket, err)
+    utils.ExitErrorf("Unable to list items in bucket %q, %v", sourceBucket, err)
   }
 
   c.IndentedJSON(http.StatusOK, resp.Contents)
 }
 
-func UploadFileToBucket(c *gin.Context) {
-  log.Printf("Uploading to bucket")
+func GetThumbnails(c *gin.Context) {
+  log.Printf("Getting thumbnails")
 
-  fileHeader, err := c.FormFile("file")
-  if (err != nil) {
-    utils.ExitErrorf("File not passed in form data")
-  }
-
-  f, err := fileHeader.Open()
-  if (err != nil) {
-    utils.ExitErrorf("Error opening file header, %v", err)
-  }
-
-  sess, err := session.NewSession(&aws.Config{
-    Region: aws.String("us-west-2")},
-  )
-  if (err != nil) {
-    utils.ExitErrorf("Error creating session, %v", err)
-  }
-
-  uploader := s3manager.NewUploader(sess)
-
-  _, err = uploader.Upload(&s3manager.UploadInput{
-    Bucket: aws.String(bucket),
-    Key: aws.String(fileHeader.Filename),
-    Body: f,
-  })
-
+  result, err := s3Client.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: aws.String(destBucket),})
   if err != nil {
-    utils.ExitErrorf("Unable to upload %q to %q, %v", fileHeader.Filename, bucket, err)
+    utils.ExitErrorf("Unable to list thumbnails for %q, %v", destBucket, err)
   }
 
-  fmt.Printf("Sucessfully uploaded %q to %q\n", fileHeader.Filename, bucket)
+  var thumbnails []string
+  for _, item := range result.Contents {
+    req, _ := s3Client.GetObjectRequest(&s3.GetObjectInput{
+      Bucket: aws.String(destBucket),
+      Key: aws.String(*item.Key),
+    })
+    urlStr, err := req.Presign(15 * 60)
+    if err != nil {
+      log.Println("Unable to sign request", err)
+      continue
+    }
+    thumbnails = append(thumbnails, urlStr)
+  }
 
-  c.IndentedJSON(http.StatusOK, "Successfully uploaded files!")
+  c.IndentedJSON(http.StatusOK, gin.H{"thumbnails": thumbnails})
 }

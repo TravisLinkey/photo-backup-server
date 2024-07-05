@@ -1,6 +1,5 @@
 resource "aws_s3_bucket" "s3_bucket" {
   bucket = "${var.bucket_name}"
-  acl = "${var.acl}"
 }
 
 resource "aws_s3_bucket_policy" "bucket_policy" {
@@ -12,7 +11,10 @@ resource "aws_s3_bucket_policy" "bucket_policy" {
       {
         Effect = "Allow",
         Principal = {
-          AWS = aws_iam_role.lambda_execution_role.arn
+          AWS = [
+            aws_iam_role.lambda_execution_role.arn,
+            var.thumbnail_execution_role_arn
+          ]
         },
         Action = [
           "s3:*"
@@ -38,4 +40,13 @@ resource "aws_s3_bucket_policy" "bucket_policy" {
       },
     ]
   })
+}
+
+resource "aws_s3_bucket_notification" "bucket_notification" {
+  bucket = aws_s3_bucket.s3_bucket.id
+
+  lambda_function {
+    lambda_function_arn = var.thumbnail_server_arn
+    events = ["s3:ObjectCreated:*"]
+  }
 }

@@ -1,13 +1,16 @@
-
 variable "bucket_name" {
   description = "The name of the bucket"
   type = string
 }
 
-variable "acl" {
-  description = "The ACL to apply"
+variable "thumbnail_server_arn" {
+  description = "Server to handle thumbnail creation"
   type = string
-  default = "private"
+}
+
+variable "thumbnail_execution_role_arn" {
+  description = "Server to handle thumbnail creation"
+  type = string
 }
 
 variable "routes" {

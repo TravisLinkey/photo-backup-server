@@ -1,6 +1,7 @@
 
 resource "aws_lambda_function" "photo_backup_server" {
   function_name    = "photo-backup-server"
+  description      = "A lambda to handle creating and s3 presigned urls"
   handler          = "bootstrap"
   runtime          = "provided.al2023"
   role             = aws_iam_role.lambda_execution_role.arn

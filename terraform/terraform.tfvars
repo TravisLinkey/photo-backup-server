@@ -1,5 +1,7 @@
 bucket_name = "photo-backup-travis-linkey"
-acl = "private"
+thumbnail_server_arn = "arn:aws:lambda:us-west-2:731084384219:function:photo-backup-thumbnail-server"
+thumbnail_execution_role_arn = "arn:aws:iam::731084384219:role/thumbnail_execution_role"
+
 routes = [
   { 
     path = "GET /",
@@ -18,7 +20,7 @@ routes = [
     authorization = "NONE"
   },
   { 
-    path = "POST /buckets/upload",
+    path = "GET /buckets/thumbnails",
     authorization = "NONE"
   },
 ]
