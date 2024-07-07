@@ -12,6 +12,10 @@ routes = [
     authorization = "NONE"
   },
   { 
+    path = "GET /buckets/directories",
+    authorization = "NONE"
+  },
+  { 
     path = "GET /buckets/objects/all",
     authorization = "NONE"
   },
@@ -20,7 +24,7 @@ routes = [
     authorization = "NONE"
   },
   { 
-    path = "GET /buckets/thumbnails",
+    path = "GET /buckets/thumbnails/{directory}",
     authorization = "NONE"
   },
 ]

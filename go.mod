@@ -7,6 +7,7 @@ require (
 	github.com/aws/aws-sdk-go v1.54.6
 	github.com/awslabs/aws-lambda-go-api-proxy v0.16.2
 	github.com/gin-gonic/gin v1.10.0
+	github.com/joho/godotenv v1.5.1
 )
 
 require (

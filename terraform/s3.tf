@@ -24,20 +24,20 @@ resource "aws_s3_bucket_policy" "bucket_policy" {
           "arn:aws:s3:::${aws_s3_bucket.s3_bucket.id}/*"
         ]
       },
-      {
-        Effect: "Deny",
-        Principal: "*",
-        Action: "s3:PutObject",
-        Resource = [
-          "arn:aws:s3:::${aws_s3_bucket.s3_bucket.id}",
-          "arn:aws:s3:::${aws_s3_bucket.s3_bucket.id}/*"
-        ],
-        Condition: {
-          StringNotEquals: {
-            "s3:x-amz-server-side-encryption": "aws:kms"
-          }
-        }
-      },
+      // {
+      //   Effect: "Deny",
+      //   Principal: "*",
+      //   Action: "s3:PutObject",
+      //   Resource = [
+      //     "arn:aws:s3:::${aws_s3_bucket.s3_bucket.id}",
+      //     "arn:aws:s3:::${aws_s3_bucket.s3_bucket.id}/*"
+      //   ],
+      //   Condition: {
+      //     StringNotEquals: {
+      //       "s3:x-amz-server-side-encryption": "aws:kms"
+      //     }
+      //   }
+      // },
     ]
   })
 }

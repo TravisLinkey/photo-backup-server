@@ -19,8 +19,9 @@ func bucketRoutes(r *gin.Engine) {
   bucketGroup := r.Group("/buckets") 
   {
     bucketGroup.GET("/all", controllers.ListBuckets)
+    bucketGroup.GET("/directories", controllers.ListDirectories)
     bucketGroup.GET("/objects/all", controllers.ListBucketObjects)
-    bucketGroup.GET("/thumbnails", controllers.GetThumbnails)
+    bucketGroup.GET("/thumbnails/:directory", controllers.GetThumbnails)
     bucketGroup.GET("/presigned-url", controllers.CreatePreSignedURL)
   }
 }

@@ -28,3 +28,4 @@ terraform/terraform.tfstate.backup
 terraform/backend.tf
 
 build
+.env
